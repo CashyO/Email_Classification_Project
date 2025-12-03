@@ -1,0 +1,7 @@
+model,dataset,accuracy
+tfidf_logreg_spam,data/spam.csv,0.9537628167924164
+tfidf_logreg_spamham,data/spam_ham_dataset.csv,0.993811641848772
+rf_spam,data/spam.csv,0.9912942542077772
+rf_spamham,data/spam_ham_dataset.csv,0.9955521175788049
+nb_spam,data/spam.csv,0.9909073321725672
+nb_spamham,data/spam_ham_dataset.csv,0.9856894217752853

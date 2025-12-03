@@ -1,0 +1,23 @@
+# Bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Environments
+.env
+.venv/
+venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model files 
+models/*.pkl
+models/*.joblib
+
+# Streamlit
+.streamlit/
+
+# Logs
+*.log

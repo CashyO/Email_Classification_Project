@@ -1,0 +1,10 @@
+model,dataset,accuracy,auc
+tfidf_logreg_spam,data/spam.csv,0.9635678391959799,0.9970332452434956
+tfidf_logreg_spamham,data/spam_ham_dataset.csv,0.9945851866176755,0.9996437348937055
+rf_spam,data/spam.csv,0.9940775305096913,0.999472709490813
+rf_spamham,data/spam_ham_dataset.csv,0.9945851866176755,0.9996459149963447
+nb_spam,data/spam.csv,0.990667623833453,0.994751787807534
+nb_spamham,data/spam_ham_dataset.csv,0.9839489460452524,0.9968481166093299
+unified_logreg,data/unified_spam_dataset.csv,0.9513978069742172,0.9966035252106054
+unified_rf,data/unified_spam_dataset.csv,0.9950607527412823,0.9990343326834685
+unified_nb,data/unified_spam_dataset.csv,0.965820408969673,0.994207334372784
