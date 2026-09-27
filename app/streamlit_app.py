@@ -8,12 +8,10 @@ if ROOT_DIR not in sys.path:
 
 from analysis.preprocessing import clean_text
 
-
 # Implement Frontend via streamlit 
 import streamlit as st
 import pickle
 import string
-from analysis.preprocessing import clean_text
 
 # Available Models to Test
 MODELS = {
@@ -28,7 +26,6 @@ MODELS = {
     "Naive Bayes (spam.csv)": ("nb_spam_model.pkl", "nb_spam_vectorizer.pkl"),
     "Naive Bayes (spam_ham_dataset.csv)": ("nb_spamham_model.pkl", "nb_spamham_vectorizer.pkl"),
     "Unified Naive Bayes (ALL DATA)": ("unified_nb_model.pkl", "unified_nb_vectorizer.pkl"),
-
 }
 
 # Streamlit UI
@@ -70,6 +67,43 @@ if st.button("🔍 Predict"):
             st.success("✅ **NOT SPAM**")
             idx = list(model.classes_).index("Not Spam")
             st.write("Confidence:", f"{prob[idx]:.4f}")
+
+        # Explain prediction via feature weights
+        st.markdown("---")
+        st.subheader("Top Contributing Words (Spam Triggers)")
+
+        feature_names = (
+            vectorizer.get_feature_names_out()
+            if hasattr(vectorizer, "get_feature_names_out")
+            else vectorizer.get_feature_names()
+        )
+
+        classes = list(model.classes_)
+        spam_idx = classes.index("Spam") if "Spam" in classes else 1
+
+        weights = None
+        if hasattr(model, "coef_"):
+            if len(classes) == 2 and model.coef_.shape[0] == 1:
+                weights = model.coef_[0] if spam_idx == 1 else -model.coef_[0]
+            else:
+                weights = model.coef_[spam_idx]
+        elif hasattr(model, "feature_log_prob_"):
+            weights = model.feature_log_prob_[spam_idx]
+        elif hasattr(model, "feature_importances_"):
+            weights = model.feature_importances_
+
+        if weights is not None and feature_names is not None:
+            non_zero_indices = features[0].nonzero()[0]
+            if len(non_zero_indices) > 0:
+                word_weights = [(feature_names[i], float(weights[i])) for i in non_zero_indices]
+                word_weights.sort(key=lambda x: x[1], reverse=True)
+                top_words = word_weights[:10]
+                explanation_data = [{"Word": word, "Weight": round(weight, 4)} for word, weight in top_words]
+                st.table(explanation_data)
+            else:
+                st.info("No matching vocabulary words found in the message.")
+        else:
+            st.info("Feature weights are not available for this model.")
 
         st.markdown("---")
         st.subheader("Preprocessed Message")
