@@ -4,6 +4,8 @@ import pickle
 import pandas as pd
 import numpy as np
 import os
+from sklearn.base import clone
+from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import (classification_report, accuracy_score, confusion_matrix, roc_curve, auc)
 from analysis.preprocessing import load_dataset, clean_text
 
@@ -73,11 +75,37 @@ def evaluate_model(model_name, data_path):
 
     acc = accuracy_score(y, preds)
 
+    # Stratified 5-Fold Cross Validation
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_accuracies = []
+    cv_aucs = []
+
+    for train_idx, test_idx in skf.split(X, y):
+        fold_model = clone(model)
+        fold_model.fit(X[train_idx], y[train_idx])
+
+        fold_preds = fold_model.predict(X[test_idx])
+        cv_accuracies.append(accuracy_score(y[test_idx], fold_preds))
+
+        spam_idx = list(fold_model.classes_).index("Spam") if "Spam" in fold_model.classes_ else 1
+        fold_probas = fold_model.predict_proba(X[test_idx])[:, spam_idx]
+        fold_fpr, fold_tpr, _ = roc_curve((y[test_idx] == "Spam").astype(int), fold_probas)
+        cv_aucs.append(auc(fold_fpr, fold_tpr))
+
+    accuracy_mean = float(np.mean(cv_accuracies))
+    accuracy_std = float(np.std(cv_accuracies))
+    auc_mean = float(np.mean(cv_aucs))
+    auc_std = float(np.std(cv_aucs))
+
     return {
         "model": model_name,
         "dataset": data_path,
         "accuracy": acc,
-        "auc": roc_auc
+        "auc": roc_auc,
+        "accuracy_mean": accuracy_mean,
+        "accuracy_std": accuracy_std,
+        "auc_mean": auc_mean,
+        "auc_std": auc_std
     }
 
 
